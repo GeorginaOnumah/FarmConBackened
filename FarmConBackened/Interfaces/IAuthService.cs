@@ -1,4 +1,6 @@
-﻿namespace FarmConBackened.Interfaces
+﻿using FarmConBackened.DTOs.Auth;
+
+namespace FarmConBackened.Interfaces
 {
     public interface IAuthService
     {

@@ -1,4 +1,6 @@
-﻿namespace FarmConBackened.Interfaces
+﻿using FarmConBackened.DTOs.Payment;
+
+namespace FarmConBackened.Interfaces
 {
     public interface IPaymentService
     {

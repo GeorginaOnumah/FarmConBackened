@@ -1,6 +1,6 @@
-﻿using FarmConBackened.DTOs.Payment;
+﻿using FarmConBackened.DTOs.Delivery;
+using FarmConBackened.DTOs.Payment;
 using FarmConBackened.Models.Enum;
-using FarmConnect.DTOs;
 
 namespace FarmConBackened.DTOs.Order
 {

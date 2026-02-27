@@ -1,4 +1,5 @@
-﻿using FarmConBackened.Models.Enum;
+﻿using FarmConBackened.DTOs.Notification;
+using FarmConBackened.Models.Enum;
 
 namespace FarmConBackened.Interfaces
 {

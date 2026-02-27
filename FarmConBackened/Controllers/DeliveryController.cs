@@ -1,6 +1,10 @@
-﻿using FarmConBackened.DataLayer;
+﻿using FarmConBackened.DTOs.Common;
+using FarmConBackened.DTOs.Delivery;
+using FarmConBackened.Helpers.Responses;
+using FarmConBackened.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace FarmConBackened.Controllers
 {
@@ -17,7 +21,9 @@ namespace FarmConBackened.Controllers
         public async Task<IActionResult> Track(string trackingCode)
         {
             var delivery = await _deliveryService.TrackDeliveryAsync(trackingCode);
-            return delivery != null ? Ok(ApiResponse<DeliveryDto>.Ok(delivery)) : NotFound(ApiResponse.Fail("Tracking code not found."));
+            return delivery != null
+    ? Ok(ApiResponse<DeliveryDto>.Ok(delivery))
+    : NotFound(ApiResponse.Fail("Tracking code not found."));
         }
 
         [HttpGet("order/{orderId:guid}")]

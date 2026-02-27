@@ -1,4 +1,6 @@
-﻿namespace FarmConBackened.Interfaces
+﻿using FarmConBackened.DTOs.Message;
+
+namespace FarmConBackened.Interfaces
 {
     public interface IMessageService
     {

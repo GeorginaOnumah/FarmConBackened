@@ -1,4 +1,6 @@
-﻿using FarmConBackened.DataLayer;
+﻿using FarmConBackened.DTOs.User;
+using FarmConBackened.Helpers.Responses;
+using FarmConBackened.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,4 +1,5 @@
-﻿using FarmConBackened.Models.Users;
+﻿using FarmConBackened.DTOs.User;
+using FarmConBackened.Models.Users;
 
 namespace FarmConBackened.Interfaces
 {

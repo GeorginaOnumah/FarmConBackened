@@ -1,4 +1,9 @@
-﻿using FarmConBackened.Models.Audit;
+﻿using FarmConBackened.DTOs.Admin;
+using FarmConBackened.DTOs.Common;
+using FarmConBackened.DTOs.Order;
+using FarmConBackened.DTOs.Product;
+using FarmConBackened.DTOs.User;
+using FarmConBackened.Models.Audit;
 using FarmConBackened.Models.Enum;
 using FarmConBackened.Models.Products;
 

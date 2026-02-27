@@ -1,5 +1,8 @@
-﻿using FarmConBackened.Interfaces;
+﻿using FarmConBackened.DTOs.User;
+using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Users;
+using FarmConnect.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace FarmConBackened.Services

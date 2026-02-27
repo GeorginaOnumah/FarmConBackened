@@ -1,4 +1,7 @@
-﻿namespace FarmConBackened.Interfaces
+﻿using FarmConBackened.DTOs.Common;
+using FarmConBackened.DTOs.Order;
+
+namespace FarmConBackened.Interfaces
 {
     public interface IOrderService
     {

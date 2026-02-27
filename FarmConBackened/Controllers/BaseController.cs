@@ -1,4 +1,5 @@
-﻿using FarmConBackened.Models.Users;
+﻿using FarmConBackened.Helpers.Extensions;
+using FarmConBackened.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FarmConBackened.Controllers

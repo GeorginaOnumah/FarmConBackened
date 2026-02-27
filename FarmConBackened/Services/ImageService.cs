@@ -1,5 +1,8 @@
 ﻿using FarmConBackened.Interfaces;
-using static System.Net.Mime.MediaTypeNames;
+//using static System.Net.Mime.MediaTypeNames;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using Microsoft.EntityFrameworkCore;
 
 namespace FarmConBackened.Services
 {

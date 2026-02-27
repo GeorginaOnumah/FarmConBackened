@@ -1,6 +1,9 @@
-﻿using FarmConBackened.Interfaces;
+﻿using FarmConBackened.DTOs.Notification;
+using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Enum;
+using Microsoft.EntityFrameworkCore;
 using FarmConBackened.Models.Messaging;
+using FarmConnect.Data;
 using System;
 
 namespace FarmConBackened.Services

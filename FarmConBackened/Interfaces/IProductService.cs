@@ -1,4 +1,6 @@
-﻿using FarmConBackened.Models.Products;
+﻿using FarmConBackened.DTOs.Common;
+using FarmConBackened.DTOs.Product;
+using FarmConBackened.Models.Products;
 
 namespace FarmConBackened.Interfaces
 {

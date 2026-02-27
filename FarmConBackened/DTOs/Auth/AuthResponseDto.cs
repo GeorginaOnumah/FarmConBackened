@@ -1,4 +1,5 @@
-﻿using FarmConnect.DTOs;
+﻿using FarmConBackened.DTOs.User;
+
 
 namespace FarmConBackened.DTOs.Auth
 {
