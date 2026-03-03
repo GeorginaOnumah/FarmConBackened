@@ -28,7 +28,8 @@ namespace FarmConBackened.Services
             var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", folder);
             Directory.CreateDirectory(uploadsPath);
 
-            var fileName = $"{Guid.NewGuid():N}{Path.GetExtension(file.FileName).ToLower()}";
+            // Change this line in ImageService.cs
+            var fileName = $"{Guid.NewGuid():N}.webp";
             var thumbName = $"thumb_{fileName}";
             var filePath = Path.Combine(uploadsPath, fileName);
             var thumbPath = Path.Combine(uploadsPath, thumbName);
@@ -61,15 +62,25 @@ namespace FarmConBackened.Services
 
         public async Task DeleteImageAsync(string imageUrl)
         {
-            try
+            await Task.Run(() =>
             {
-                var baseUrl = _config["App:BaseUrl"] ?? "http://localhost:5000";
-                var relativePath = imageUrl.Replace(baseUrl, "").TrimStart('/');
-                var filePath = Path.Combine(_env.WebRootPath, relativePath);
-                if (File.Exists(filePath)) File.Delete(filePath);
-            }
-            catch { /* Swallow – log in production */ }
-            await Task.CompletedTask;
+                try
+                {
+                    var baseUrl = _config["App:BaseUrl"] ?? "https://localhost:5001";
+                    var relativePath = imageUrl.Replace(baseUrl, "").TrimStart('/');
+                    var filePath = Path.Combine(_env.WebRootPath, relativePath);
+
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+
+                    // Also try deleting the thumbnail
+                    var thumbPath = Path.Combine(Path.GetDirectoryName(filePath)!, "thumb_" + Path.GetFileName(filePath));
+                    if (File.Exists(thumbPath))
+                        File.Delete(thumbPath);
+                }
+                catch { /* Log this in production */ }
+            });
         }
+
     }
 }

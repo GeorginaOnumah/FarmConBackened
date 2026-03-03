@@ -196,7 +196,8 @@ namespace FarmConnect.Services
                 if (!_imageService.IsValidImage(file)) continue;
 
                 var (url, thumbUrl, size) = await _imageService.SaveImageAsync(file, "products");
-                var image = new ProductImage
+
+                var newImage = new ProductImage
                 {
                     ProductId = product.Id,
                     ImageUrl = url,
@@ -204,13 +205,15 @@ namespace FarmConnect.Services
                     FileSizeBytes = size,
                     IsPrimary = isFirst
                 };
-                _db.ProductImages.Add(image);
+
+                _db.ProductImages.Add(newImage);
                 urls.Add(url);
                 isFirst = false;
             }
 
-            await _db.SaveChangesAsync();
-            return urls;
+            // --- ADD THESE TWO LINES ---
+            await _db.SaveChangesAsync(); // Saves the new image records to SQL
+            return urls;                  // Tells the controller which URLs were created
         }
 
         public async Task DeleteProductImageAsync(Guid farmerUserId, Guid imageId)
