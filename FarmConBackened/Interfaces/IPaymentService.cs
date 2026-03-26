@@ -9,5 +9,6 @@ namespace FarmConBackened.Interfaces
         Task<bool> ReleaseEscrowAsync(Guid orderId);
         Task<bool> RefundPaymentAsync(Guid orderId);
         Task<List<PaymentDto>> GetOrderPaymentsAsync(Guid userId, Guid orderId);
+        Task<bool> HandleWebhookAsync(string rawBody, string paystackSignature);
     }
 }

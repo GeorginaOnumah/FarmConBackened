@@ -1,121 +1,138 @@
-﻿using FarmConBackened.Interfaces;
-using FarmConBackened.Models.Deliveries;
+﻿using FarmConBackened.DTOs.Payment;
+using FarmConBackened.DTOs.Paystack;
+using FarmConBackened.Helpers;
+using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Enum;
-using Microsoft.EntityFrameworkCore;
 using FarmConBackened.Models.Payments;
-using System;
 using FarmConnect.Data;
-using FarmConBackened.DTOs.Payment;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
-namespace FarmConBackened.Services
+namespace FarmConnect.Services
 {
     public class PaymentService : IPaymentService
     {
         private readonly AppDbContext _db;
         private readonly INotificationService _notifications;
         private readonly IAuditService _audit;
+        private readonly PaystackHelper _paystack;
         private readonly ILogger<PaymentService> _logger;
 
-        public PaymentService(AppDbContext db, INotificationService notifications,
-            IAuditService audit, ILogger<PaymentService> logger)
+        public PaymentService(
+            AppDbContext db,
+            INotificationService notifications,
+            IAuditService audit,
+            PaystackHelper paystack,
+            ILogger<PaymentService> logger)
         {
             _db = db;
             _notifications = notifications;
             _audit = audit;
+            _paystack = paystack;
             _logger = logger;
         }
 
         public async Task<object> InitiatePaymentAsync(Guid buyerUserId, InitiatePaymentDto dto)
         {
             var order = await _db.Orders
-                .Include(o => o.BuyerProfile)
+                .Include(o => o.BuyerProfile).ThenInclude(b => b.User)
                 .Include(o => o.Payment)
                 .FirstOrDefaultAsync(o => o.Id == dto.OrderId)
-                ?? throw new KeyNotFoundException("Order not found.");
+                ?? throw new KeyNotFoundException("Order not found");
 
             if (order.BuyerProfile.UserId != buyerUserId)
-                throw new UnauthorizedAccessException("Access denied.");
+                throw new UnauthorizedAccessException("Access denied");
 
             if (order.Status != OrderStatus.Accepted)
-                throw new InvalidOperationException("Order must be accepted before payment.");
+                throw new InvalidOperationException("Order must be accepted before payment");
 
-            if (order.Payment != null && order.Payment.Status == PaymentStatus.Held)
-                throw new InvalidOperationException("Payment already completed for this order.");
+            var reference = $"FC-{order.OrderNumber}-{Guid.NewGuid():N[..6]}";
 
-            var gatewayRef = $"FC-{order.OrderNumber}-{DateTime.UtcNow.Ticks}";
+            var paystackResult = await _paystack.InitializeTransactionAsync(
+                order.BuyerProfile.User.Email,
+                (long)(order.TotalAmount * 100),
+                reference,
+                new { orderId = order.Id }
+            );
+
             var payment = order.Payment ?? new Payment { OrderId = order.Id };
+
             payment.Amount = order.TotalAmount;
-            payment.PaymentGateway = dto.PaymentGateway;
-            payment.GatewayReference = gatewayRef;
+            payment.PaymentGateway = "Paystack";
+            payment.GatewayReference = reference;
             payment.Status = PaymentStatus.Pending;
-            payment.UpdatedAt = DateTime.UtcNow;
 
             if (order.Payment == null) _db.Payments.Add(payment);
-            await _db.SaveChangesAsync();
 
-            // In production, call Paystack/Flutterwave SDK here and return their payment URL
-            _logger.LogInformation("Payment initiated: OrderId={OrderId}, Ref={Ref}", order.Id, gatewayRef);
+            await _db.SaveChangesAsync();
 
             return new
             {
-                PaymentReference = gatewayRef,
-                Amount = order.TotalAmount,
-                OrderNumber = order.OrderNumber,
-                Gateway = dto.PaymentGateway,
-                Message = "Redirect user to payment gateway. Call /verify after payment.",
-                // In production: AuthorizationUrl = paystackResponse.data.authorization_url
+                reference,
+                paystackResult?.AuthorizationUrl
             };
         }
 
         public async Task<PaymentDto> VerifyPaymentAsync(PaymentVerificationDto dto)
         {
             var payment = await _db.Payments
-                .Include(p => p.Order).ThenInclude(o => o.FarmerProfile).ThenInclude(f => f.User)
-                .Include(p => p.Order).ThenInclude(o => o.BuyerProfile).ThenInclude(b => b.User)
-                .FirstOrDefaultAsync(p => p.GatewayReference == dto.GatewayReference && p.OrderId == dto.OrderId)
-                ?? throw new KeyNotFoundException("Payment record not found.");
+                .Include(p => p.Order)
+                .FirstOrDefaultAsync(p => p.GatewayReference == dto.GatewayReference)
+                ?? throw new KeyNotFoundException("Payment not found");
 
-            // In production: verify with gateway using GatewayReference
-            // For now, simulate success
-            payment.Status = PaymentStatus.Held; // Escrow hold
-            payment.PaidAt = DateTime.UtcNow;
-            payment.EscrowReference = $"ESC-{Guid.NewGuid():N}";
-            payment.UpdatedAt = DateTime.UtcNow;
+            var verify = await _paystack.VerifyTransactionAsync(dto.GatewayReference);
 
+            if (verify == null || verify.Status != "success")
+            {
+                payment.Status = PaymentStatus.Failed;
+                await _db.SaveChangesAsync();
+                throw new Exception("Payment verification failed");
+            }
+
+            payment.Status = PaymentStatus.Held;
             payment.Order.Status = OrderStatus.Processing;
-            payment.Order.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
-            await _audit.LogAsync(null, "PAYMENT_RECEIVED", "Payment", payment.Id.ToString());
 
-            await _notifications.SendNotificationAsync(
-                payment.Order.FarmerProfile.UserId,
-                NotificationType.PaymentUpdate,
-                "Payment Received",
-                $"Payment of ₦{payment.Amount:N0} for order #{payment.Order.OrderNumber} is held in escrow.",
-                payment.OrderId.ToString());
+            return new PaymentDto
+            {
+                Id = payment.Id,
+                Amount = payment.Amount,
+                Status = payment.Status
+            };
+        }
 
-            return MapPaymentDto(payment);
+        public async Task<bool> HandleWebhookAsync(string body, string signature)
+        {
+            if (!_paystack.VerifySignature(body, signature)) return false;
+
+            var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(body);
+
+            if (payload?.Event == "charge.success")
+            {
+                var payment = await _db.Payments
+                    .FirstOrDefaultAsync(p => p.GatewayReference == payload.Data!.Reference);
+
+                if (payment != null)
+                {
+                    payment.Status = PaymentStatus.Held;
+                    await _db.SaveChangesAsync();
+                }
+            }
+
+            return true;
         }
 
         public async Task<bool> ReleaseEscrowAsync(Guid orderId)
         {
             var payment = await _db.Payments
-                .Include(p => p.Order).ThenInclude(o => o.FarmerProfile).ThenInclude(f => f.User)
-                .FirstOrDefaultAsync(p => p.OrderId == orderId && p.Status == PaymentStatus.Held)
-                ?? throw new KeyNotFoundException("No held payment found for this order.");
+                .FirstOrDefaultAsync(p => p.OrderId == orderId);
+
+            if (payment == null)
+                throw new Exception("Payment not found");
 
             payment.Status = PaymentStatus.Released;
-            payment.ReleasedAt = DateTime.UtcNow;
-            payment.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-
-            await _notifications.SendNotificationAsync(
-                payment.Order.FarmerProfile.UserId,
-                NotificationType.PaymentUpdate,
-                "Payment Released",
-                $"₦{payment.Amount:N0} has been released to your account.",
-                orderId.ToString());
 
             return true;
         }
@@ -123,50 +140,33 @@ namespace FarmConBackened.Services
         public async Task<bool> RefundPaymentAsync(Guid orderId)
         {
             var payment = await _db.Payments
-                .Include(p => p.Order).ThenInclude(o => o.BuyerProfile).ThenInclude(b => b.User)
-                .FirstOrDefaultAsync(p => p.OrderId == orderId)
-                ?? throw new KeyNotFoundException("Payment not found.");
+                .FirstOrDefaultAsync(p => p.OrderId == orderId);
 
-            if (payment.Status == PaymentStatus.Released)
-                throw new InvalidOperationException("Cannot refund a payment that has already been released.");
+            if (payment == null)
+                throw new Exception("Payment not found");
+
+            await _paystack.RefundAsync(
+                payment.GatewayTransactionId!,
+                (long)(payment.Amount * 100)
+            );
 
             payment.Status = PaymentStatus.Refunded;
-            payment.RefundedAt = DateTime.UtcNow;
-            payment.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-
-            await _notifications.SendNotificationAsync(
-                payment.Order.BuyerProfile.UserId,
-                NotificationType.PaymentUpdate,
-                "Payment Refunded",
-                $"₦{payment.Amount:N0} has been refunded to your account.",
-                orderId.ToString());
 
             return true;
         }
 
         public async Task<List<PaymentDto>> GetOrderPaymentsAsync(Guid userId, Guid orderId)
         {
-            var payments = await _db.Payments
-                .Include(p => p.Order).ThenInclude(o => o.BuyerProfile)
-                .Include(p => p.Order).ThenInclude(o => o.FarmerProfile)
+            return await _db.Payments
                 .Where(p => p.OrderId == orderId)
+                .Select(p => new PaymentDto
+                {
+                    Id = p.Id,
+                    Amount = p.Amount,
+                    Status = p.Status
+                })
                 .ToListAsync();
-
-            return payments.Select(MapPaymentDto).ToList();
         }
-
-        private static PaymentDto MapPaymentDto(Payment p) => new()
-        {
-            Id = p.Id,
-            Amount = p.Amount,
-            Status = p.Status,
-            PaymentGateway = p.PaymentGateway,
-            GatewayReference = p.GatewayReference,
-            PaidAt = p.PaidAt,
-            ReleasedAt = p.ReleasedAt
-        };
     }
-
-    
 }

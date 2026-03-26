@@ -1,6 +1,7 @@
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json.Serialization;
+using FarmConBackened.Helpers;
 using FarmConBackened.Interfaces;
 using FarmConBackened.Middleware.Exception;
 using FarmConBackened.Middleware.Logging;
@@ -40,12 +41,22 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<PaystackHelper>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+
+
+// HTTP Client (Paystack)
+builder.Services.AddHttpClient("Paystack", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Paystack:BaseUrl"] ?? "https://api.paystack.co");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
     ?? throw new InvalidOperationException("JWT Secret is not configured.");
