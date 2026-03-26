@@ -1,6 +1,6 @@
 ﻿using FarmConBackened.Models.Orders;
 using FarmConBackened.Models.Products;
-using FarmConnect.Models;
+using FarmConBackened.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace FarmConBackened.Models.Users

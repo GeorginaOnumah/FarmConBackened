@@ -8,8 +8,8 @@ using FarmConBackened.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using FarmConBackened.Models.Enum;
 using FarmConBackened.Models.Products;
-using FarmConnect.Data;
-using FarmConnect.Models.Enums;
+using FarmConBackened.Data;
+using FarmConBackened.Models.Enums;
 using System;
 
 namespace FarmConBackened.Services

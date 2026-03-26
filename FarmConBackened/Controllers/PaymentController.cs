@@ -1,15 +1,15 @@
 ﻿using FarmConBackened.DTOs.Payment;
+using FarmConBackened.Helpers;
 using FarmConBackened.Helpers.Extensions;
 using FarmConBackened.Helpers.Responses;
 using FarmConBackened.Interfaces;
-using FarmConnect.Data;
-using FarmConnect.Helpers;
-using FarmConnect.Services;
+using FarmConBackened.Services;
+using FarmConBackened.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FarmConnect.Controllers
+namespace FarmConBackened.Controllers
 {
     [Route("api/payments")]
     [ApiController]

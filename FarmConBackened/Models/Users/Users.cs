@@ -1,6 +1,6 @@
 ﻿using FarmConBackened.Models.Enum;
-using FarmConnect.Models.Enums;
-using FarmConnect.Models;
+using FarmConBackened.Models.Enums;
+using FarmConBackened.Models;
 using System.ComponentModel.DataAnnotations;
 using FarmConBackened.Models.Messaging;
 

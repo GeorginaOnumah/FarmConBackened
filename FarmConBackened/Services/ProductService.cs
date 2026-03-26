@@ -2,11 +2,11 @@
 using FarmConBackened.DTOs.Product;
 using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Products;
-using FarmConnect.Data;
-using FarmConnect.Models;
+using FarmConBackened.Data;
+using FarmConBackened.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FarmConnect.Services
+namespace FarmConBackened.Services
 {
     public class ProductService : IProductService
     {

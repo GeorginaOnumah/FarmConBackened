@@ -1,5 +1,5 @@
 ﻿using FarmConBackened.Models.Enum;
-using FarmConnect.Models.Enums;
+using FarmConBackened.Models.Enums;
 
 namespace FarmConBackened.DTOs.User
 {

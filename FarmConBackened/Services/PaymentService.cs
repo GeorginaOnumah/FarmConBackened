@@ -4,11 +4,11 @@ using FarmConBackened.Helpers;
 using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Enum;
 using FarmConBackened.Models.Payments;
-using FarmConnect.Data;
+using FarmConBackened.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
-namespace FarmConnect.Services
+namespace FarmConBackened.Services
 {
     public class PaymentService : IPaymentService
     {

@@ -1,4 +1,4 @@
-﻿namespace FarmConnect.Models.Enums
+﻿namespace FarmConBackened.Models.Enums
 {
     public enum UserRole
     {

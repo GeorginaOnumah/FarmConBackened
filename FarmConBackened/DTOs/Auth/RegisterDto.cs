@@ -1,4 +1,4 @@
-﻿using FarmConnect.Models.Enums;
+﻿using FarmConBackened.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace FarmConBackened.DTOs.Auth

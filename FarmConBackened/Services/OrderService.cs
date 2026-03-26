@@ -6,11 +6,10 @@ using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Deliveries;
 using FarmConBackened.Models.Enum;
 using FarmConBackened.Models.Orders;
-using FarmConnect.Data;
-using FarmConnect.Models;
+using FarmConBackened.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace FarmConnect.Services
+namespace FarmConBackened.Services
 {
     public class OrderService : IOrderService
     {

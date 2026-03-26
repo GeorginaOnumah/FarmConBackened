@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace FarmConnect.Helpers
+namespace FarmConBackened.Helpers
 {
     public static class ClaimsPrincipalExtensions
     {

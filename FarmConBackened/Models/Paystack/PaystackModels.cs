@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 
-namespace FarmConnect.Models.Paystack
+namespace FarmConBackened.Models.Paystack
     {
         public class PaystackInitResponse
         {

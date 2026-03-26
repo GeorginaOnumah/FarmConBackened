@@ -1,7 +1,7 @@
 ﻿using FarmConBackened.DTOs.User;
 using FarmConBackened.Interfaces;
 using FarmConBackened.Models.Users;
-using FarmConnect.Data;
+using FarmConBackened.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 

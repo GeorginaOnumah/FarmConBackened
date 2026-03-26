@@ -1,5 +1,5 @@
 ﻿using FarmConBackened.Models.Orders;
-using FarmConnect.Models;
+using FarmConBackened.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace FarmConBackened.Models.Users

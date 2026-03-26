@@ -9,7 +9,7 @@ using FarmConBackened.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
-namespace FarmConnect.Data
+namespace FarmConBackened.Data
 {
     public class AppDbContext : DbContext
     {
